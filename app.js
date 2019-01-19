@@ -114,7 +114,7 @@ app.get('/callback', function(req, res) {
                         headers: { 'Authorization': 'Bearer ' + access_token }
                     };
 
-
+                    
                     var parsedItems;
                     var playlists = [];
 
@@ -134,17 +134,16 @@ app.get('/callback', function(req, res) {
                             
                             console.log("name: " + item.name + "\n");
                             var playlist = new Playlist(item.name, item.tracks);
+                            console.log(playlist);
                             playlists.push(playlist);
                         })
                     });
-                        //console.log(playlists);
-                        // playlists.forEach(function(playlist){
-                        //     console.log("SHIT");
-                        //     console.log(playlist);
-                        //     console.log(playlist.name);
+            
+                        playlists.forEach(function(playlist){
+                           
 
-                        //     console.log("\n")
-                        // });
+                            console.log("name: " + item.name)
+                        });
 
 
                 });
