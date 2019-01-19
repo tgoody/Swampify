@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+    <script type="text/javascript" src="javascript/interact.js"></script>
+    <link rel="stylesheet" href="stylesheets/style.css">
+    
+    <title>Swampify</title>
+</head>
+<body>
+    <h1>Swampify</h1>
+    
+    <div id="page" class = "d-flex">
+    <div id="column" class = "d-flex flex-column">     
+        <div id="create-group">
+            <h2>Create A Party</h2>
+            <form>
+                <div class="form-group">
+                    <div id="create-submit" class="d-flex">
+                        <input class="form-control" id="create-input"  placeholder="Enter name for playlist">
+                        <button id="join-btn"type="submit" class="btn btn-primary">Create</button>
+                    </div>         
+                </div>  
+            </form>    
+        </div>    
+
+    <div id="join-group">       
+        <h2>Join A Party</h2>
+        <form>
+            <div class="form-group">
+                <div id="join-submit" class="d-flex">
+                    <input type="party-code" class="form-control" id="party-input" aria-describedby="join-message" placeholder="Enter code to join">
+                    <button id="join-btn"type="submit" class="btn btn-primary">Join</button>
+                </div>
+                <small id="join-message" class="form-text text-muted">JOIN THAT BITCH</small>
+            </div>        
+        </form>        
+    </div> 
+    
+
+    </div>
+    </div>
+
+
+
+</body>
+</html>
