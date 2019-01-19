@@ -20,6 +20,8 @@ var redirect_uri = 'http://localhost:8888/callback'; // Your redirect uri
 var clientBody;
 var clientURI;
 
+const Playlist = require('./modules/playlist')
+
 /**
  * Generates a random string containing numbers and letters
  * @param  {number} length The length of the string
@@ -113,7 +115,8 @@ app.get('/callback', function(req, res) {
                     };
 
 
-                    var playlists;
+                    var parsedItems;
+                    var playlists = [];
 
                     request.get(options, function(error, response, body){
                         //console.log(body);
@@ -123,37 +126,36 @@ app.get('/callback', function(req, res) {
 
                         var parsed = JSON.parse(body);
                         //console.log(parsed.next);
-                        playlists = parsed.items;
+                        parsedItems = parsed.items;
 
                         //console.log(playlists);
 
-                        playlists.forEach(function(playlist){
-                            //console.log(playlist);
-
-
-
+                        parsedItems.forEach(function(item){
+                            
+                            console.log("name: " + item.name + "\n");
+                            var playlist = new Playlist(item.name, item.tracks);
+                            playlists.push(playlist);
                         })
-
                     });
+                        //console.log(playlists);
+                        // playlists.forEach(function(playlist){
+                        //     console.log("SHIT");
+                        //     console.log(playlist);
+                        //     console.log(playlist.name);
 
-
+                        //     console.log("\n")
+                        // });
 
 
                 });
 
-
-                //class here
-
-
+        
                 // we can also pass the token to the browser to make requests from there
                 res.redirect('/#' +
                     querystring.stringify({
                         access_token: access_token,
                         refresh_token: refresh_token
                     }));
-
-
-
 
 
             } else {

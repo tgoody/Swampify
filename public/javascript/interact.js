@@ -24,8 +24,4 @@ $(document).ready(function() {
 
     });
 
-
-    
-   
-
 });
