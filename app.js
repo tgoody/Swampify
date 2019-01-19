@@ -134,7 +134,7 @@ app.get('/callback', function(req, res) {
                         parsedItems.forEach(function(item){
                             //console.log("name: " + item.name + "\n");
                             var playlist = new Playlist(item.name, item.tracks);
-                            console.log(playlist);
+                            //console.log(playlist);
                             playlists.push(playlist);
 
                         });
@@ -143,29 +143,14 @@ app.get('/callback', function(req, res) {
 
                         playlists.forEach(function(playlist){
                             playlist.addTracks(access_token, function(){
-                                console.log(playlist.trackArray);
+
+                                storeTrackData(playlist, access_token);
+
+                                //console.log(playlist.trackArray);
                                 //console.log("\nNEWPLAYLIST\n");
                                 //console.log(playlist.trackArray.length);
                             });
                         });
-
-                        playlists.forEach(function(playlist){
-                            
-                            var firstURLPart = "https://api.spotify.com/v1/audio-features/?ids=";
-
-
-                            playlist.trackArray.forEach(function(track){
-                                console.log(track);
-                                //firstURLPart = firstURLPart.concat(track.id, ',');
-                            });
-
-                            //console.log(firstURLPart);
-
-
-
-                        })
-
-
 
                     });
                 });
@@ -215,6 +200,56 @@ app.get('/refresh_token', function(req, res) {
 
 console.log('Listening on 8888');
 app.listen(8888);
+
+
+
+function storeTrackData(playlist, access_token){
+
+
+        var firstURLPart = "https://api.spotify.com/v1/audio-features/?ids=";
+
+        //console.log(playlist.trackArray);
+        //console.log(playlist);
+        for(i = 0; i < playlist.trackArray.length-1; i++){
+            firstURLPart = firstURLPart.concat(playlist.trackArray[i].id, ',');
+        }
+        firstURLPart = firstURLPart.concat(playlist.trackArray[playlist.trackArray.length-1].id);
+
+        var options = {
+            url: firstURLPart,
+            headers: {'Authorization': 'Bearer ' + access_token}
+        }
+
+        request.get(options, function(error, response, body){
+            if(error){
+                console.log(error);
+            }
+
+            var parsed = JSON.parse(body);
+            //console.log(parsed);
+
+            for(i = 0; i < parsed.audio_features.length; i++){
+
+                playlist.trackArray[i].danceability = parsed.audio_features[i].danceability;
+                playlist.trackArray[i].energy = parsed.audio_features[i].energy;
+                playlist.trackArray[i].acousticness = parsed.audio_features[i].acousticness;
+                playlist.trackArray[i].instrumentalness = parsed.audio_features[i].instrumentalness;
+                playlist.trackArray[i].valence = parsed.audio_features[i].valence;
+
+                //console.log(playlist.trackArray[i]);
+            }
+
+
+            //console.log(parsed);
+
+
+        })
+
+
+
+
+}
+
 
 
 
