@@ -6,14 +6,18 @@ module.exports = class Playlist {
     constructor(name, trackPaging) {
         this.name = name;
         this.tracksLink = trackPaging.href;
+        this.trackArray = [];
+        this.trackDataObjects = [];
+
       }
 
-    addTracks(access_token){
+    addTracks(access_token, callback){
 
         var options = {
             url: this.tracksLink,
             headers: { 'Authorization': 'Bearer ' + access_token}
             };
+        var self = this;
 
         request.get(options, function(error, response, body){
 
@@ -22,7 +26,27 @@ module.exports = class Playlist {
             }
 
             var parsed = JSON.parse(body);
-            console.log(parsed);
+            var parsedItems = parsed.items;
+
+           // console.log(parsedItems);
+
+
+
+            var newArr = [];
+            parsedItems.forEach(function(track){
+
+                var tempTrack = new Track(track.track.name, track.track.id);
+
+                //console.log(tempTrack.name + " " + tempTrack.id);
+
+                newArr.push(tempTrack);
+
+            })
+
+            self.trackArray = newArr;
+            //console.log("FINISHED");
+            //console.log(self.trackArray[6].name);
+            callback();
 
         });
 

@@ -139,9 +139,33 @@ app.get('/callback', function(req, res) {
 
                         });
 
+
+
                         playlists.forEach(function(playlist){
-                            playlist.addTracks(access_token);
+                            playlist.addTracks(access_token, function(){
+                                console.log(playlist.trackArray);
+                                //console.log("\nNEWPLAYLIST\n");
+                                //console.log(playlist.trackArray.length);
+                            });
                         });
+
+                        playlists.forEach(function(playlist){
+                            
+                            var firstURLPart = "https://api.spotify.com/v1/audio-features/?ids=";
+
+
+                            playlist.trackArray.forEach(function(track){
+                                console.log(track);
+                                //firstURLPart = firstURLPart.concat(track.id, ',');
+                            });
+
+                            //console.log(firstURLPart);
+
+
+
+                        })
+
+
 
                     });
                 });
