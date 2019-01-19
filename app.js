@@ -125,7 +125,14 @@ app.get('/callback', function(req, res) {
                         //console.log(parsed.next);
                         playlists = parsed.items;
 
-                        console.log(playlists);
+                        //console.log(playlists);
+
+                        playlists.forEach(function(playlist){
+                            //console.log(playlist);
+
+
+
+                        })
 
                     });
 
@@ -134,6 +141,8 @@ app.get('/callback', function(req, res) {
 
                 });
 
+
+                //class here
 
 
                 // we can also pass the token to the browser to make requests from there
