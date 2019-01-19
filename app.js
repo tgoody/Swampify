@@ -20,7 +20,8 @@ var redirect_uri = 'http://localhost:8888/callback'; // Your redirect uri
 var clientBody;
 var clientURI;
 
-const Playlist = require('./modules/playlist')
+const Playlist = require('./modules/playlist');
+const Track = require('./modules/track');
 
 /**
  * Generates a random string containing numbers and letters
@@ -131,21 +132,23 @@ app.get('/callback', function(req, res) {
                         //console.log(playlists);
 
                         parsedItems.forEach(function(item){
-                            
-                            console.log("name: " + item.name + "\n");
+                            //console.log("name: " + item.name + "\n");
                             var playlist = new Playlist(item.name, item.tracks);
                             console.log(playlist);
                             playlists.push(playlist);
-                        })
-                    });
-            
-                        playlists.forEach(function(playlist){
-                           
 
-                            console.log("name: " + item.name)
+                        });
+
+                        playlists.forEach(function(playlist){
+
+
+                            playlist.addTracks(access_token);
+
+
                         });
 
 
+                    });
                 });
 
         
