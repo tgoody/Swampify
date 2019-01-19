@@ -108,18 +108,32 @@ app.get('/callback', function(req, res) {
 
                     var clientID = clientBody.id;
                     var options = {
-                        url: 'https://api.spotify.com/v1/users/' + clientID + '/playlists',
+                        url: 'https://api.spotify.com/v1/users/' + clientID + '/playlists?limit=50',
                         headers: { 'Authorization': 'Bearer ' + access_token }
-                    }
+                    };
 
 
+                    var playlists;
 
                     request.get(options, function(error, response, body){
-                        console.log(options);
-                        console.log(body);
+                        //console.log(body);
                         if(error){
                             console.log(error);
                         }
+
+                        var parsed = JSON.parse(body);
+                        //console.log(parsed.next);
+                        playlists = parsed.items;
+
+                        //console.log(playlists);
+
+                        playlists.forEach(function(playlist){
+                            //console.log(playlist);
+
+
+
+                        })
+
                     });
 
 
@@ -127,6 +141,8 @@ app.get('/callback', function(req, res) {
 
                 });
 
+
+                //class here
 
 
                 // we can also pass the token to the browser to make requests from there
@@ -174,14 +190,12 @@ app.get('/refresh_token', function(req, res) {
     });
 });
 
-
-function getClientPlaylists(){
-
-
-
-}
-
-
-
 console.log('Listening on 8888');
 app.listen(8888);
+
+
+
+
+
+
+
