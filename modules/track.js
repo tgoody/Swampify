@@ -4,7 +4,4 @@ module.exports = class track{
         this.id = id;
     }
 
-
-
-
 }

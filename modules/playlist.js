@@ -22,7 +22,6 @@ module.exports = class Playlist {
             }
 
             var parsed = JSON.parse(body);
-
             console.log(parsed);
 
         });

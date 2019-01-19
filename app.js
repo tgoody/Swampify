@@ -140,13 +140,8 @@ app.get('/callback', function(req, res) {
                         });
 
                         playlists.forEach(function(playlist){
-
-
                             playlist.addTracks(access_token);
-
-
                         });
-
 
                     });
                 });
