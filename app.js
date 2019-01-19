@@ -115,7 +115,7 @@ app.get('/callback', function(req, res) {
                         headers: { 'Authorization': 'Bearer ' + access_token }
                     };
 
-
+                    
                     var parsedItems;
                     var playlists = [];
 
@@ -134,6 +134,7 @@ app.get('/callback', function(req, res) {
                         parsedItems.forEach(function(item){
                             //console.log("name: " + item.name + "\n");
                             var playlist = new Playlist(item.name, item.tracks);
+                            console.log(playlist);
                             playlists.push(playlist);
 
                         });
