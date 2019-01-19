@@ -49,7 +49,7 @@ app.get('/login', function(req, res) {
     res.cookie(stateKey, state);
 
     // your application requests authorization
-    var scope = 'user-read-private user-read-email';
+    var scope = 'user-read-private user-read-email playlist-read-private';
     res.redirect('https://accounts.spotify.com/authorize?' +
         querystring.stringify({
             response_type: 'code',
@@ -103,13 +103,31 @@ app.get('/callback', function(req, res) {
 
                 // use the access token to access the Spotify Web API
                 request.get(options, function(error, response, body) {
-                    console.log(body);
+                    //console.log(body);
                     clientBody = body;
 
-                    clientURI = clientBody.uri;
-                    console.log("fuck u fuck u fuck u " + clientURI);
+                    var clientID = clientBody.id;
+                    var options = {
+                        url: 'https://api.spotify.com/v1/users/' + clientID + '/playlists',
+                        headers: { 'Authorization': 'Bearer ' + access_token }
+                    }
+
+
+
+                    request.get(options, function(error, response, body){
+                        console.log(options);
+                        console.log(body);
+                        if(error){
+                            console.log(error);
+                        }
+                    });
+
+
+
 
                 });
+
+
 
                 // we can also pass the token to the browser to make requests from there
                 res.redirect('/#' +
@@ -117,6 +135,11 @@ app.get('/callback', function(req, res) {
                         access_token: access_token,
                         refresh_token: refresh_token
                     }));
+
+
+
+
+
             } else {
                 res.redirect('/#' +
                     querystring.stringify({
@@ -152,7 +175,11 @@ app.get('/refresh_token', function(req, res) {
 });
 
 
+function getClientPlaylists(){
 
+
+
+}
 
 
 
