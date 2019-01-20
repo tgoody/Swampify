@@ -23,6 +23,11 @@ var clientURI;
 const Playlist = require('./modules/playlist');
 const Track = require('./modules/track');
 
+const path = require('path');
+
+var join_code;
+
+
 /**
  * Generates a random string containing numbers and letters
  * @param  {number} length The length of the string
@@ -153,31 +158,27 @@ app.get('/callback', function(req, res) {
                             
                             var firstURLPart = "https://api.spotify.com/v1/audio-features/?ids=";
 
-
                             playlist.trackArray.forEach(function(track){
                                 console.log(track);
                                 //firstURLPart = firstURLPart.concat(track.id, ',');
                             });
 
                             //console.log(firstURLPart);
-
-
-
                         })
-
-
-
                     });
                 });
 
-        
+            
                 // we can also pass the token to the browser to make requests from there
-                res.redirect('/#' +
-                    querystring.stringify({
-                        access_token: access_token,
-                        refresh_token: refresh_token
-                    }));
+                // res.redirect('/#' +
+                //     querystring.stringify({
+                //         access_token: access_token,
+                //         refresh_token: refresh_token
+                //     }));
 
+                join_code = generateRandomString(6);
+                console.log(join_code);
+                res.redirect('/join_code/' + join_code);
 
             } else {
                 res.redirect('/#' +
@@ -188,6 +189,13 @@ app.get('/callback', function(req, res) {
         });
     }
 });
+
+app.get('/join_code/:id' , function(req,res){
+    console.log("BEFORE SEND FILE: " + join_code);
+    res.sendFile(path.join(__dirname+'/public/loaded.html'));
+
+});
+
 
 app.get('/refresh_token', function(req, res) {
 
