@@ -19,6 +19,7 @@ var redirect_uri = 'http://localhost:8888/callback'; // Your redirect uri
 
 var clientBody;
 var clientURI;
+var readyToMakePlaylist = false;
 
 const Playlist = require('./modules/playlist');
 const Track = require('./modules/track');
@@ -73,6 +74,7 @@ app.get('/callback', function(req, res) {
     // your application requests refresh and access tokens
     // after checking the state parameter
 
+    readyToMakePlaylist = false;
     var code = req.query.code || null;
     var state = req.query.state || null;
     var storedState = req.cookies ? req.cookies[stateKey] : null;
@@ -139,7 +141,7 @@ app.get('/callback', function(req, res) {
                         parsedItems.forEach(function(item){
                             //console.log("name: " + item.name + "\n");
                             var playlist = new Playlist(item.name, item.tracks);
-                            console.log(playlist);
+                            //console.log(playlist);
                             playlists.push(playlist);
 
                         });
@@ -148,23 +150,30 @@ app.get('/callback', function(req, res) {
 
                         playlists.forEach(function(playlist){
                             playlist.addTracks(access_token, function(){
-                                console.log(playlist.trackArray);
+
+                                storeTrackData(playlist, access_token);
+
+                                //console.log(playlist.trackArray);
                                 //console.log("\nNEWPLAYLIST\n");
                                 //console.log(playlist.trackArray.length);
                             });
                         });
 
-                        playlists.forEach(function(playlist){
-                            
-                            var firstURLPart = "https://api.spotify.com/v1/audio-features/?ids=";
 
-                            playlist.trackArray.forEach(function(track){
-                                console.log(track);
-                                //firstURLPart = firstURLPart.concat(track.id, ',');
-                            });
+                        if(readyToMakePlaylist){
 
-                            //console.log(firstURLPart);
-                        })
+                            var options = {
+
+                                url: "https://api.spotify.com/v1/users/" + clientID + "/playlists",
+                                headers: {'Authorization': 'Bearer ' + access_token}
+
+
+                        }
+
+
+
+
+                        }
                     });
                 });
 
@@ -223,6 +232,61 @@ app.get('/refresh_token', function(req, res) {
 
 console.log('Listening on 8888');
 app.listen(8888);
+
+
+
+function storeTrackData(playlist, access_token){
+
+
+        var firstURLPart = "https://api.spotify.com/v1/audio-features/?ids=";
+
+        //console.log(playlist.trackArray);
+        //console.log(playlist);
+        for(i = 0; i < playlist.trackArray.length-1; i++){
+            firstURLPart = firstURLPart.concat(playlist.trackArray[i].id, ',');
+        }
+        firstURLPart = firstURLPart.concat(playlist.trackArray[playlist.trackArray.length-1].id);
+
+        var options = {
+            url: firstURLPart,
+            headers: {'Authorization': 'Bearer ' + access_token}
+        }
+
+        request.get(options, function(error, response, body){
+            if(error){
+                console.log(error);
+            }
+
+            var parsed = JSON.parse(body);
+            //console.log(parsed);
+
+            var counter = 0;
+
+            for(i = 0; i < parsed.audio_features.length; i++){
+
+                playlist.trackArray[i].danceability = parsed.audio_features[i].danceability;
+                playlist.trackArray[i].energy = parsed.audio_features[i].energy;
+                playlist.trackArray[i].acousticness = parsed.audio_features[i].acousticness;
+                playlist.trackArray[i].instrumentalness = parsed.audio_features[i].instrumentalness;
+                playlist.trackArray[i].valence = parsed.audio_features[i].valence;
+                counter++;
+                //console.log(playlist.trackArray[i]);
+            }
+
+            if(counter == parsed.audio_features.length-1){
+                readyToMakePlaylist = true;
+            }
+
+            //console.log(parsed);
+
+
+        })
+
+
+
+
+}
+
 
 
 
