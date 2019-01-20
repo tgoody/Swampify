@@ -80,6 +80,8 @@ app.get('/callback', function(req, res) {
     var state = req.query.state || null;
     var storedState = req.cookies ? req.cookies[stateKey] : null;
 
+
+
     if (state === null || state !== storedState) {
         res.redirect('/#' +
             querystring.stringify({
@@ -112,6 +114,7 @@ app.get('/callback', function(req, res) {
                     json: true
                 };
 
+
                 // use the access token to access the Spotify Web API
                 request.get(options, function(error, response, body) {
                     //console.log(body);
@@ -143,7 +146,7 @@ app.get('/callback', function(req, res) {
 
                         parsedItems.forEach(function(item){
                             //console.log("name: " + item.name + "\n");
-                            var playlist = new Playlist(item.name, item.tracks);
+                            var playlist = new Playlist(item.name, item.tracks, item.id);
                             //console.log(playlist);
                             playlists.push(playlist);
 
@@ -152,7 +155,7 @@ app.get('/callback', function(req, res) {
                         playlists.forEach(function (playlist) {
                             playlist.addTracks(access_token, function () {
 
-                                storeTrackData(playlist, access_token, fillPlaylist());
+                                storeTrackData(playlist, access_token);
 
                                 //console.log(playlist.trackArray);
                                 //console.log("\nNEWPLAYLIST\n");
@@ -231,7 +234,6 @@ function storeTrackData(playlist, access_token){
         var firstURLPart = "https://api.spotify.com/v1/audio-features/?ids=";
 
         //console.log(playlist.trackArray);
-        //console.log(playlist);
         for(i = 0; i < playlist.trackArray.length-1; i++){
             firstURLPart = firstURLPart.concat(playlist.trackArray[i].id, ',');
         }
@@ -240,7 +242,7 @@ function storeTrackData(playlist, access_token){
         var options = {
             url: firstURLPart,
             headers: {'Authorization': 'Bearer ' + access_token}
-        }
+        };
 
         request.get(options, function(error, response, body){
             if(error){
@@ -252,24 +254,30 @@ function storeTrackData(playlist, access_token){
 
             var counter = 0;
 
-                if (parsed.audio_features) {
-                    //console.log("Audio feature length: " + parsed.audio_features.length);
-                    for (i = 0; i < parsed.audio_features.length; i++) {
 
-                        playlist.trackArray[i].danceability = parsed.audio_features[i].danceability;
-                        playlist.trackArray[i].energy = parsed.audio_features[i].energy;
-                        playlist.trackArray[i].acousticness = parsed.audio_features[i].acousticness;
-                        playlist.trackArray[i].instrumentalness = parsed.audio_features[i].instrumentalness;
-                        playlist.trackArray[i].valence = parsed.audio_features[i].valence;
-                        counter++;
-                        //console.log(playlist.trackArray[i]);
-                    }
-                    if (counter === parsed.audio_features.length && counter !== 0) {
-                        playlist.complete = true;
-                        fillPlaylist(playlist, access_token);
+            if(parsed.audio_features) {
+                //console.log("Audio feature length: " + parsed.audio_features.length);
+                for (i = 0; i < parsed.audio_features.length; i++) {
 
-                    }
+                    playlist.trackArray[i].danceability = parsed.audio_features[i].danceability;
+                    playlist.trackArray[i].energy = parsed.audio_features[i].energy;
+                    playlist.trackArray[i].acousticness = parsed.audio_features[i].acousticness;
+                    playlist.trackArray[i].instrumentalness = parsed.audio_features[i].instrumentalness;
+                    playlist.trackArray[i].valence = parsed.audio_features[i].valence;
+                    counter++;
+                    //console.log(playlist.trackArray[i]);
                 }
+                if (counter === parsed.audio_features.length && counter !== 0) {
+                    playlist.complete = true;
+                    //console.log(playlist.name);
+                    if (playlist.name !== null) {
+                        //console.log(playlist.name);
+                        fillPlaylist(playlist, access_token)
+                    }
+
+
+                }
+            }
 
 
 
@@ -308,6 +316,28 @@ function createPlaylist(clientID, access_token){
 
 
 function fillPlaylist(playlist, access_token) {
+
+
+    var firstURLPart = "https://api.spotify.com/v1/playlists/" + playlist.id + "/tracks";
+
+    var matchingTrackURIs;
+
+    playlist.trackArray.forEach(function(track){
+
+        if(
+            (track.danceability <= (songData[0]+0.1) && track.danceability >= (songData[0] - 0.1))
+            && (track.energy <= (songData[1]+0.1) && track.energy >= (songData[1] - 0.1))
+            && (track.acousticness <= (songData[2]+0.1) && track.acousticness >= (songData[2] - 0.1))
+            && (track.instrumentalness <= (songData[3]+0.1) && track.instrumentalness >= (songData[3] - 0.1))
+            && (track.valence <= (songData[4]+0.1) && track.valence >= (songData[4] - 0.1))
+        ){
+
+            matchingTrackURIs.push(track.uri);
+
+        }
+    })
+
+
 
 
 }
