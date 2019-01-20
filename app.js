@@ -17,9 +17,11 @@ var client_id = 'b17ecc12d66441eb8749fcee579ea8a1'; // Your client id
 var client_secret = 'f2b6f115f4d54823a6782a13dd2a07ab'; // Your secret
 var redirect_uri = 'http://localhost:8888/callback'; // Your redirect uri
 
+var songData = [0.7, 0.5, 0.2, 0.0, 0.7];
+
+
 var clientBody;
 var clientURI;
-var readyToMakePlaylist = false;
 
 const Playlist = require('./modules/playlist');
 const Track = require('./modules/track');
@@ -58,7 +60,7 @@ app.get('/login', function(req, res) {
     res.cookie(stateKey, state);
 
     // your application requests authorization
-    var scope = 'user-read-private user-read-email playlist-read-private';
+    var scope = 'user-read-private user-read-email playlist-read-private playlist-modify-private playlist-modify-public';
     res.redirect('https://accounts.spotify.com/authorize?' +
         querystring.stringify({
             response_type: 'code',
@@ -74,7 +76,6 @@ app.get('/callback', function(req, res) {
     // your application requests refresh and access tokens
     // after checking the state parameter
 
-    readyToMakePlaylist = false;
     var code = req.query.code || null;
     var state = req.query.state || null;
     var storedState = req.cookies ? req.cookies[stateKey] : null;
@@ -122,7 +123,9 @@ app.get('/callback', function(req, res) {
                         headers: { 'Authorization': 'Bearer ' + access_token }
                     };
 
-                    
+
+                    //createPlaylist(clientID, access_token);
+
                     var parsedItems;
                     var playlists = [];
 
@@ -146,12 +149,10 @@ app.get('/callback', function(req, res) {
 
                         });
 
+                        playlists.forEach(function (playlist) {
+                            playlist.addTracks(access_token, function () {
 
-
-                        playlists.forEach(function(playlist){
-                            playlist.addTracks(access_token, function(){
-
-                                storeTrackData(playlist, access_token);
+                                storeTrackData(playlist, access_token, fillPlaylist());
 
                                 //console.log(playlist.trackArray);
                                 //console.log("\nNEWPLAYLIST\n");
@@ -160,20 +161,9 @@ app.get('/callback', function(req, res) {
                         });
 
 
-                        if(readyToMakePlaylist){
-
-                            var options = {
-
-                                url: "https://api.spotify.com/v1/users/" + clientID + "/playlists",
-                                headers: {'Authorization': 'Bearer ' + access_token}
-
-
-                        }
 
 
 
-
-                        }
                     });
                 });
 
@@ -262,20 +252,26 @@ function storeTrackData(playlist, access_token){
 
             var counter = 0;
 
-            for(i = 0; i < parsed.audio_features.length; i++){
+                if (parsed.audio_features) {
+                    //console.log("Audio feature length: " + parsed.audio_features.length);
+                    for (i = 0; i < parsed.audio_features.length; i++) {
 
-                playlist.trackArray[i].danceability = parsed.audio_features[i].danceability;
-                playlist.trackArray[i].energy = parsed.audio_features[i].energy;
-                playlist.trackArray[i].acousticness = parsed.audio_features[i].acousticness;
-                playlist.trackArray[i].instrumentalness = parsed.audio_features[i].instrumentalness;
-                playlist.trackArray[i].valence = parsed.audio_features[i].valence;
-                counter++;
-                //console.log(playlist.trackArray[i]);
-            }
+                        playlist.trackArray[i].danceability = parsed.audio_features[i].danceability;
+                        playlist.trackArray[i].energy = parsed.audio_features[i].energy;
+                        playlist.trackArray[i].acousticness = parsed.audio_features[i].acousticness;
+                        playlist.trackArray[i].instrumentalness = parsed.audio_features[i].instrumentalness;
+                        playlist.trackArray[i].valence = parsed.audio_features[i].valence;
+                        counter++;
+                        //console.log(playlist.trackArray[i]);
+                    }
+                    if (counter === parsed.audio_features.length && counter !== 0) {
+                        playlist.complete = true;
+                        fillPlaylist(playlist, access_token);
 
-            if(counter == parsed.audio_features.length-1){
-                readyToMakePlaylist = true;
-            }
+                    }
+                }
+
+
 
             //console.log(parsed);
 
@@ -288,9 +284,33 @@ function storeTrackData(playlist, access_token){
 }
 
 
+function createPlaylist(clientID, access_token){
+
+    var options = {
+
+            url: "https://api.spotify.com/v1/users/" + clientID + "/playlists",
+            body: JSON.stringify({name: "Swampify"}),
+            headers: {
+                'Authorization': 'Bearer ' + access_token,
+                'Content-Type': 'application/json'
+            }
+        };
+
+        request.post(options, function(error, response, body){
+
+            //console.log(body);
 
 
+        });
 
+
+}
+
+
+function fillPlaylist(playlist, access_token) {
+
+
+}
 
 
 

@@ -7,6 +7,7 @@ module.exports = class Playlist {
         this.name = name;
         this.tracksLink = trackPaging.href;
         this.trackArray = [];
+        this.complete = false;
       }
 
     addTracks(access_token, callback){
