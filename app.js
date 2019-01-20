@@ -17,8 +17,9 @@ var client_id = 'b17ecc12d66441eb8749fcee579ea8a1'; // Your client id
 var client_secret = 'f2b6f115f4d54823a6782a13dd2a07ab'; // Your secret
 var redirect_uri = 'http://localhost:8888/callback'; // Your redirect uri
 
-var songData = [0.7, 0.5, 0.2, 0.0, 0.7];
+var songData = [0.5, 0.7, 0.1, 0.1, 0.2];
 
+var newPlaylistID;
 
 var clientBody;
 var clientURI;
@@ -127,7 +128,7 @@ app.get('/callback', function(req, res) {
                     };
 
 
-                    //createPlaylist(clientID, access_token);
+                    createPlaylist(clientID, access_token);
 
                     var parsedItems;
                     var playlists = [];
@@ -237,7 +238,7 @@ function storeTrackData(playlist, access_token){
         for(i = 0; i < playlist.trackArray.length-1; i++){
             firstURLPart = firstURLPart.concat(playlist.trackArray[i].id, ',');
         }
-        firstURLPart = firstURLPart.concat(playlist.trackArray[playlist.trackArray.length-1].id);
+        //firstURLPart = firstURLPart.concat(playlist.trackArray[playlist.trackArray.length-1].id);
 
         var options = {
             url: firstURLPart,
@@ -255,9 +256,13 @@ function storeTrackData(playlist, access_token){
             var counter = 0;
 
 
-            if(parsed.audio_features) {
+            if(parsed.audio_features !== null) {
                 //console.log("Audio feature length: " + parsed.audio_features.length);
                 for (i = 0; i < parsed.audio_features.length; i++) {
+
+                    if(parsed.audio_features[i] == null){
+                        continue;
+                    }
 
                     playlist.trackArray[i].danceability = parsed.audio_features[i].danceability;
                     playlist.trackArray[i].energy = parsed.audio_features[i].energy;
@@ -265,7 +270,7 @@ function storeTrackData(playlist, access_token){
                     playlist.trackArray[i].instrumentalness = parsed.audio_features[i].instrumentalness;
                     playlist.trackArray[i].valence = parsed.audio_features[i].valence;
                     counter++;
-                    //console.log(playlist.trackArray[i]);
+                    console.log(playlist.trackArray[i]);
                 }
                 if (counter === parsed.audio_features.length && counter !== 0) {
                     playlist.complete = true;
@@ -307,6 +312,9 @@ function createPlaylist(clientID, access_token){
         request.post(options, function(error, response, body){
 
             //console.log(body);
+            var fuckParse = JSON.parse(body);
+            newPlaylistID = fuckParse.id;
+
 
 
         });
@@ -318,24 +326,55 @@ function createPlaylist(clientID, access_token){
 function fillPlaylist(playlist, access_token) {
 
 
-    var firstURLPart = "https://api.spotify.com/v1/playlists/" + playlist.id + "/tracks";
+    var firstURLPart = "https://api.spotify.com/v1/playlists/" + newPlaylistID + "/tracks";
 
-    var matchingTrackURIs;
+    var matchingTrackURIs = [];
+    var counter = 0;
 
-    playlist.trackArray.forEach(function(track){
+    playlist.trackArray.forEach(function (track) {
 
-        if(
-            (track.danceability <= (songData[0]+0.1) && track.danceability >= (songData[0] - 0.1))
-            && (track.energy <= (songData[1]+0.1) && track.energy >= (songData[1] - 0.1))
-            && (track.acousticness <= (songData[2]+0.1) && track.acousticness >= (songData[2] - 0.1))
-            && (track.instrumentalness <= (songData[3]+0.1) && track.instrumentalness >= (songData[3] - 0.1))
-            && (track.valence <= (songData[4]+0.1) && track.valence >= (songData[4] - 0.1))
-        ){
+        if (
+            (track.danceability <= (songData[0] + 0.1) && track.danceability >= (songData[0] - 0.1))
+            && (track.energy <= (songData[1] + 0.1) && track.energy >= (songData[1] - 0.1))
+            && (track.acousticness <= (songData[2] + 0.1) && track.acousticness >= (songData[2] - 0.1))
+            && (track.instrumentalness <= (songData[3] + 0.1) && track.instrumentalness >= (songData[3] - 0.1))
+            && (track.valence <= (songData[4] + 0.1) && track.valence >= (songData[4] - 0.1))
+        ) {
 
+            console.log(track);
             matchingTrackURIs.push(track.uri);
 
         }
-    })
+
+        counter++;
+    });
+
+
+    if(counter === playlist.trackArray.length) {
+
+        var options = {
+
+            url: firstURLPart,
+            body: JSON.stringify(matchingTrackURIs),
+            headers: {
+                'Authorization': 'Bearer ' + access_token,
+                'Content-Type': 'application/json'
+            }
+        }
+
+        request.post(options, function (error, response, body) {
+
+            //console.log(body);
+
+
+        });
+    }
+
+
+
+
+
+
 
 
 
