@@ -17,17 +17,18 @@
     <h1>Swampify</h1>
     
     <div id="page" class = "d-flex">
-    <div id="column" class = "d-flex flex-column">     
+    <div id="column" class = "d-flex flex-column">   
+        
+    <form action="/create" method="post">
         <div id="create-group">
-            <h2>Create A Playlist</h2>
+            <h2 id="clickable">Create A Playlist</h2>
             
-                
                 <div class="form-group">
                     <div id="create-submit" class="d-flex">
-                        <form action="/create" method="get">
+                        
                             <input type="text" class="form-control" id="create-input" name="name" placeholder="Enter name for playlist">
                             <button  id="create-btn" type="submit" class="btn btn-primary">Create</button>
-                        </form>
+                        
                     </div>         
                 </div>  
             
@@ -38,32 +39,33 @@
                 <p>
                 <h4>Danceability</h4>
                 <div class="slidecontainer">
-                        <input type="range" min="1" max="100" value="50" class="slider" id="dance-range">
+                        <input name="dance_val" type="range" min="1" max="100" value="50" class="slider" id="dance-range">
                         <b id="dance-cnt"></b>
                 </div>
             
                 <p><h4>Energy</h4>
                     <div class="slidecontainer">
-                            <input type="range" min="1" max="100" value="50" class="slider" id="energy-range">
+                            <input name="energy_val" type="range" min="1" max="100" value="50" class="slider" id="energy-range">
                             <b id="energy-cnt"></b>
                     </div>
                 <p><h4>Acousticness</h4>
                     <div class="slidecontainer">
-                            <input type="range" min="1" max="100" value="50" class="slider" id="acoustic-range">
+                            <input name="acoustic_val" type="range" min="1" max="100" value="50" class="slider" id="acoustic-range">
                             <b id="acoustic-cnt"></b>
                     </div>
                 </p>
                 <p><h4>Instrumentalness</h4>
                     <div class="slidecontainer">
-                            <input type="range" min="1" max="100" value="50" class="slider" id="instrument-range">
+                            <input name="instrument_val" type="range" min="1" max="100" value="50" class="slider" id="instrument-range">
                             <b id="instrument-cnt"></b>
                     </div>        </p>
                 <p><h4>Valence</h4>
                     <div class="slidecontainer">
-                            <input type="range" min="1" max="100" value="50" class="slider" id="valence-range">
+                            <input name="valence_val" type="range" min="1" max="100" value="50" class="slider" id="valence-range">
                             <b id="valence-cnt"></b>
                     </div>        </p>
         </div>
+    </form>
 
     <!-- <div id="join-group">       
         <h2>Join A Party</h2>

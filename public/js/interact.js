@@ -1,29 +1,27 @@
 console.log("yeet");
 
 $(document).ready(function() {
-    //$(".form-group").hide();
+    $(".form-group").hide();
 
 
-    $('h2').mouseover(function(){
-        console.log($(this).css("font-size"));
+    $('#clickable').mouseover(function(){
+       
         var newSize = parseInt($(this).css("font-size")) + 5;
         $(this).css("font-size", newSize + "px");
 
         $(this).click(function(){
-           
+            $(".form-group").show();
         });
 
     });
   
-    $('h2').mouseout(function(){
-        console.log($(this).css("font-size"));
-
+    $('#clickable').mouseout(function(){
+      
         var newSize = parseInt($(this).css("font-size")) - 5;
 
         $(this).css("font-size", newSize + "px");
 
     });
-
 
 
     // (function() {
@@ -62,26 +60,5 @@ $(document).ready(function() {
     //         } 
     //     }
     // })();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 });

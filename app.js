@@ -15,14 +15,15 @@ var cookieParser = require('cookie-parser');
 //var Handlebars = require('handlebars');
 
 const path = require('path');
-
+const bodyParser = require('body-parser');
 
 var client_id = 'b17ecc12d66441eb8749fcee579ea8a1'; // Your client id
 var client_secret = 'f2b6f115f4d54823a6782a13dd2a07ab'; // Your secret
 var redirect_uri = 'http://localhost:8888/callback'; // Your redirect uri
 
-var songData = [0.7, 0.5, 0.2, 0.0, 0.7];
+var songData = [];
 
+var newPlaylistID;
 
 var clientBody;
 var clientURI;
@@ -32,6 +33,7 @@ const Playlist = require('./modules/playlist');
 const Track = require('./modules/track');
 
 var join_code;
+var playlist_name;
 
 
 var app = express();
@@ -42,8 +44,9 @@ app.use(express.static(__dirname + '/public'))
     .use(cors())
     .use(cookieParser());
 
-//app.engine('html', require('ejs').renderFile);
+app.use(bodyParser.urlencoded({ extended: true }));
 
+//app.engine('html', require('ejs').renderFile);
 
 
 /**
@@ -63,8 +66,12 @@ var generateRandomString = function(length) {
 
 var stateKey = 'spotify_auth_state';
 
-app.get('/create', function(req, res) {
-    console.log(req);
+app.post('/create', function(req, res) {
+    console.log(req.body);
+    playlist_name = req.body.name;
+    songData = [req.body.dance_val / 100, req.body.energy_val / 100, req.body.acoustic_val / 100, req.body.instrument_val / 100, req.body.valence_val / 100 ];
+
+    console.log("SONG DATA: " + songData);
     var state = generateRandomString(16);
     res.cookie(stateKey, state);
 
@@ -134,7 +141,10 @@ app.get('/callback', function(req, res) {
                         url: 'https://api.spotify.com/v1/users/' + clientID + '/playlists?limit=50',
                         headers: { 'Authorization': 'Bearer ' + access_token }
                     };
-                    
+
+
+                    createPlaylist(clientID, access_token);
+
                     var parsedItems;
                     var playlists = [];
 
@@ -176,6 +186,7 @@ app.get('/callback', function(req, res) {
                 //         refresh_token: refresh_token
                 //     }));
 
+                res.redirect('/');
 
                 // THIS IS IMPORTANT FOR LATER, FUCK
                 // join_code = generateRandomString(6);
@@ -237,7 +248,7 @@ function storeTrackData(playlist, access_token){
         for(i = 0; i < playlist.trackArray.length-1; i++){
             firstURLPart = firstURLPart.concat(playlist.trackArray[i].id, ',');
         }
-        firstURLPart = firstURLPart.concat(playlist.trackArray[playlist.trackArray.length-1].id);
+        //firstURLPart = firstURLPart.concat(playlist.trackArray[playlist.trackArray.length-1].id);
 
         var options = {
             url: firstURLPart,
@@ -255,9 +266,13 @@ function storeTrackData(playlist, access_token){
             var counter = 0;
 
 
-            if(parsed.audio_features) {
+            if(parsed.audio_features !== null) {
                 //console.log("Audio feature length: " + parsed.audio_features.length);
                 for (i = 0; i < parsed.audio_features.length; i++) {
+
+                    if(parsed.audio_features[i] == null){
+                        continue;
+                    }
 
                     playlist.trackArray[i].danceability = parsed.audio_features[i].danceability;
                     playlist.trackArray[i].energy = parsed.audio_features[i].energy;
@@ -294,9 +309,8 @@ function storeTrackData(playlist, access_token){
 function createPlaylist(clientID, access_token){
 
     var options = {
-
             url: "https://api.spotify.com/v1/users/" + clientID + "/playlists",
-            body: JSON.stringify({name: "Swampify"}),
+            body: JSON.stringify({name: playlist_name}),
             headers: {
                 'Authorization': 'Bearer ' + access_token,
                 'Content-Type': 'application/json'
@@ -306,6 +320,9 @@ function createPlaylist(clientID, access_token){
         request.post(options, function(error, response, body){
 
             //console.log(body);
+            var fuckParse = JSON.parse(body);
+            newPlaylistID = fuckParse.id;
+
 
 
         });
@@ -317,24 +334,55 @@ function createPlaylist(clientID, access_token){
 function fillPlaylist(playlist, access_token) {
 
 
-    var firstURLPart = "https://api.spotify.com/v1/playlists/" + playlist.id + "/tracks";
+    var firstURLPart = "https://api.spotify.com/v1/playlists/" + newPlaylistID + "/tracks";
 
-    var matchingTrackURIs;
+    var matchingTrackURIs = [];
+    var counter = 0;
 
-    playlist.trackArray.forEach(function(track){
+    playlist.trackArray.forEach(function (track) {
 
-        if(
-            (track.danceability <= (songData[0]+0.1) && track.danceability >= (songData[0] - 0.1))
-            && (track.energy <= (songData[1]+0.1) && track.energy >= (songData[1] - 0.1))
-            && (track.acousticness <= (songData[2]+0.1) && track.acousticness >= (songData[2] - 0.1))
-            && (track.instrumentalness <= (songData[3]+0.1) && track.instrumentalness >= (songData[3] - 0.1))
-            && (track.valence <= (songData[4]+0.1) && track.valence >= (songData[4] - 0.1))
-        ){
+        if (
+            (track.danceability <= (songData[0] + 0.1) && track.danceability >= (songData[0] - 0.1))
+            && (track.energy <= (songData[1] + 0.1) && track.energy >= (songData[1] - 0.1))
+            && (track.acousticness <= (songData[2] + 0.1) && track.acousticness >= (songData[2] - 0.1))
+            && (track.instrumentalness <= (songData[3] + 0.1) && track.instrumentalness >= (songData[3] - 0.1))
+            && (track.valence <= (songData[4] + 0.1) && track.valence >= (songData[4] - 0.1))
+        ) {
 
+            //console.log(track);
             matchingTrackURIs.push(track.uri);
 
         }
-    })
+
+        counter++;
+    });
+
+
+    if(counter === playlist.trackArray.length) {
+
+        var options = {
+
+            url: firstURLPart,
+            body: JSON.stringify(matchingTrackURIs),
+            headers: {
+                'Authorization': 'Bearer ' + access_token,
+                'Content-Type': 'application/json'
+            }
+        }
+
+        request.post(options, function (error, response, body) {
+
+            //console.log(body);
+
+
+        });
+    }
+
+
+
+
+
+
 
 
 

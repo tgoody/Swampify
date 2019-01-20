@@ -4,7 +4,9 @@ body {
   background-color: #191414;
 }
 
-
+b{
+  color: #1DB954;
+}
 h1, h4 {
   color: #1DB954;
 }
@@ -46,7 +48,7 @@ h2 {
 
 .slider {
   -webkit-appearance: none;
-  width: 100%;
+  width: 400px;
   height: 15px;
   border-radius: 5px;   
   background: #d3d3d3;
@@ -62,7 +64,7 @@ h2 {
   width: 25px;
   height: 25px;
   border-radius: 50%; 
-  background: #4CAF50;
+  background: #1DB954;
   cursor: pointer;
 }
 
