@@ -266,36 +266,38 @@ function storeTrackData(playlist, access_token){
             var counter = 0;
 
 
-            if(parsed.audio_features !== null) {
-                //console.log("Audio feature length: " + parsed.audio_features.length);
-                for (i = 0; i < parsed.audio_features.length; i++) {
+            try {
 
-                    if(parsed.audio_features[i] == null){
-                        continue;
+                if (parsed.audio_features !== null) {
+                    //console.log("Audio feature length: " + parsed.audio_features.length);
+                    for (i = 0; i < parsed.audio_features.length; i++) {
+
+                        if (parsed.audio_features[i] == null) {
+                            continue;
+                        }
+
+                        playlist.trackArray[i].danceability = parsed.audio_features[i].danceability;
+                        playlist.trackArray[i].energy = parsed.audio_features[i].energy;
+                        playlist.trackArray[i].acousticness = parsed.audio_features[i].acousticness;
+                        playlist.trackArray[i].instrumentalness = parsed.audio_features[i].instrumentalness;
+                        playlist.trackArray[i].valence = parsed.audio_features[i].valence;
+                        counter++;
+                        //console.log(playlist.trackArray[i]);
                     }
-
-                    playlist.trackArray[i].danceability = parsed.audio_features[i].danceability;
-                    playlist.trackArray[i].energy = parsed.audio_features[i].energy;
-                    playlist.trackArray[i].acousticness = parsed.audio_features[i].acousticness;
-                    playlist.trackArray[i].instrumentalness = parsed.audio_features[i].instrumentalness;
-                    playlist.trackArray[i].valence = parsed.audio_features[i].valence;
-                    counter++;
-                    //console.log(playlist.trackArray[i]);
-                }
-                if (counter === parsed.audio_features.length && counter !== 0) {
-                    playlist.complete = true;
-                    //console.log(playlist.name);
-                    if (playlist.name !== null) {
+                    if (counter === parsed.audio_features.length && counter !== 0) {
+                        playlist.complete = true;
                         //console.log(playlist.name);
-                        fillPlaylist(playlist, access_token)
+                        if (playlist.name !== null) {
+                            //console.log(playlist.name);
+                            fillPlaylist(playlist, access_token)
+                        }
+
+
                     }
-
-
                 }
             }
 
-            if(counter == parsed.audio_features.length-1){
-                readyToMakePlaylist = true;
+            catch(error){
             }
             //console.log(parsed);
         })
@@ -342,11 +344,11 @@ function fillPlaylist(playlist, access_token) {
     playlist.trackArray.forEach(function (track) {
 
         if (
-            (track.danceability <= (songData[0] + 0.1) && track.danceability >= (songData[0] - 0.1))
-            && (track.energy <= (songData[1] + 0.1) && track.energy >= (songData[1] - 0.1))
-            && (track.acousticness <= (songData[2] + 0.1) && track.acousticness >= (songData[2] - 0.1))
-            && (track.instrumentalness <= (songData[3] + 0.1) && track.instrumentalness >= (songData[3] - 0.1))
-            && (track.valence <= (songData[4] + 0.1) && track.valence >= (songData[4] - 0.1))
+            (track.danceability <= (songData[0] + 0.2) && track.danceability >= (songData[0] - 0.2))
+            && (track.energy <= (songData[1] + 0.2) && track.energy >= (songData[1] - 0.2))
+            && (track.acousticness <= (songData[2] + 0.2) && track.acousticness >= (songData[2] - 0.2))
+            && (track.instrumentalness <= (songData[3] + 0.2) && track.instrumentalness >= (songData[3] - 0.2))
+            && (track.valence <= (songData[4] + 0.2) && track.valence >= (songData[4] - 0.2))
         ) {
 
             //console.log(track);
@@ -372,7 +374,7 @@ function fillPlaylist(playlist, access_token) {
 
         request.post(options, function (error, response, body) {
 
-            //console.log(body);
+            console.log(body);
 
 
         });
