@@ -19,6 +19,7 @@ var redirect_uri = 'http://localhost:8888/callback'; // Your redirect uri
 
 var clientBody;
 var clientURI;
+var readyToMakePlaylist = false;
 
 const Playlist = require('./modules/playlist');
 const Track = require('./modules/track');
@@ -68,6 +69,7 @@ app.get('/callback', function(req, res) {
     // your application requests refresh and access tokens
     // after checking the state parameter
 
+    readyToMakePlaylist = false;
     var code = req.query.code || null;
     var state = req.query.state || null;
     var storedState = req.cookies ? req.cookies[stateKey] : null;
@@ -152,6 +154,21 @@ app.get('/callback', function(req, res) {
                             });
                         });
 
+
+                        if(readyToMakePlaylist){
+
+                            var options = {
+
+                                url: "https://api.spotify.com/v1/users/" + clientID + "/playlists",
+                                headers: {'Authorization': 'Bearer ' + access_token}
+
+
+                        }
+
+
+
+
+                        }
                     });
                 });
 
@@ -228,6 +245,8 @@ function storeTrackData(playlist, access_token){
             var parsed = JSON.parse(body);
             //console.log(parsed);
 
+            var counter = 0;
+
             for(i = 0; i < parsed.audio_features.length; i++){
 
                 playlist.trackArray[i].danceability = parsed.audio_features[i].danceability;
@@ -235,10 +254,13 @@ function storeTrackData(playlist, access_token){
                 playlist.trackArray[i].acousticness = parsed.audio_features[i].acousticness;
                 playlist.trackArray[i].instrumentalness = parsed.audio_features[i].instrumentalness;
                 playlist.trackArray[i].valence = parsed.audio_features[i].valence;
-
+                counter++;
                 //console.log(playlist.trackArray[i]);
             }
 
+            if(counter == parsed.audio_features.length-1){
+                readyToMakePlaylist = true;
+            }
 
             //console.log(parsed);
 
