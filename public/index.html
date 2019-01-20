@@ -19,18 +19,53 @@
     <div id="page" class = "d-flex">
     <div id="column" class = "d-flex flex-column">     
         <div id="create-group">
-            <h2>Create A Party</h2>
+            <h2>Create A Playlist</h2>
             
+                
                 <div class="form-group">
                     <div id="create-submit" class="d-flex">
-                        <input class="form-control" id="create-input"  placeholder="Enter name for playlist">
-                        <a href="/login"><button  id="join-btn"type="submit" class="btn btn-primary">Create</button></a>
+                        <form action="/create" method="get">
+                            <input type="text" class="form-control" id="create-input" name="name" placeholder="Enter name for playlist">
+                            <button  id="create-btn" type="submit" class="btn btn-primary">Create</button>
+                        </form>
                     </div>         
                 </div>  
-        
+            
+            
         </div>    
 
-    <div id="join-group">       
+        <div id="slide-box">
+                <p>
+                <h4>Danceability</h4>
+                <div class="slidecontainer">
+                        <input type="range" min="1" max="100" value="50" class="slider" id="dance-range">
+                        <b id="dance-cnt"></b>
+                </div>
+            
+                <p><h4>Energy</h4>
+                    <div class="slidecontainer">
+                            <input type="range" min="1" max="100" value="50" class="slider" id="energy-range">
+                            <b id="energy-cnt"></b>
+                    </div>
+                <p><h4>Acousticness</h4>
+                    <div class="slidecontainer">
+                            <input type="range" min="1" max="100" value="50" class="slider" id="acoustic-range">
+                            <b id="acoustic-cnt"></b>
+                    </div>
+                </p>
+                <p><h4>Instrumentalness</h4>
+                    <div class="slidecontainer">
+                            <input type="range" min="1" max="100" value="50" class="slider" id="instrument-range">
+                            <b id="instrument-cnt"></b>
+                    </div>        </p>
+                <p><h4>Valence</h4>
+                    <div class="slidecontainer">
+                            <input type="range" min="1" max="100" value="50" class="slider" id="valence-range">
+                            <b id="valence-cnt"></b>
+                    </div>        </p>
+        </div>
+
+    <!-- <div id="join-group">       
         <h2>Join A Party</h2>
         <form>
             <div class="form-group">
@@ -41,13 +76,54 @@
                 <small id="join-message" class="form-text text-muted">JOIN THAT BITCH</small>
             </div>        
         </form>        
-    </div> 
-    
+    </div>  -->
 
     </div>
     </div>
 
+    <script>
 
+            var dance_slider = document.getElementById("dance-range");
+            var dance_cnt = document.getElementById("dance-cnt");
+            dance_cnt.innerHTML = dance_slider.value; // Display the default slider value
+            // Update the current slider value (each time you drag the slider handle)
+            dance_slider.oninput = function() {
+              dance_cnt.innerHTML = this.value;
+            }
+
+            var energy_slider = document.getElementById("energy-range");
+            var energy_cnt = document.getElementById("energy-cnt");
+            energy_cnt.innerHTML = energy_slider.value; // Display the default slider value
+            // Update the current slider value (each time you drag the slider handle)
+            energy_slider.oninput = function() {
+            energy_cnt.innerHTML = this.value;
+            }
+
+            var acoustic_slider = document.getElementById("acoustic-range");
+            var acoustic_cnt = document.getElementById("acoustic-cnt");
+            acoustic_cnt.innerHTML = acoustic_slider.value; // Display the default slider value
+            // Update the current slider value (each time you drag the slider handle)
+            acoustic_slider.oninput = function() {
+              acoustic_cnt.innerHTML = this.value;
+            }
+
+            var instrument_slider = document.getElementById("instrument-range");
+            var instrument_cnt = document.getElementById("instrument-cnt");
+            instrument_cnt.innerHTML = instrument_slider.value; // Display the default slider value
+            // Update the current slider value (each time you drag the slider handle)
+            instrument_slider.oninput = function() {
+              instrument_cnt.innerHTML = this.value;
+            }
+
+            var valence_slider = document.getElementById("valence-range");
+            var valence_cnt = document.getElementById("valence-cnt");
+            valence_cnt.innerHTML = valence_slider.value; // Display the default slider value
+            // Update the current slider value (each time you drag the slider handle)
+            valence_slider.oninput = function() {
+            valence_cnt.innerHTML = this.value;
+            }
+            
+    </script>
 
 </body>
 </html>

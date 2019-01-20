@@ -21,9 +21,11 @@ var client_id = 'b17ecc12d66441eb8749fcee579ea8a1'; // Your client id
 var client_secret = 'f2b6f115f4d54823a6782a13dd2a07ab'; // Your secret
 var redirect_uri = 'http://localhost:8888/callback'; // Your redirect uri
 
+var songData = [0.7, 0.5, 0.2, 0.0, 0.7];
+
+
 var clientBody;
 var clientURI;
-var readyToMakePlaylist = false;
 
 // MODULES/CLASSES HERE
 const Playlist = require('./modules/playlist');
@@ -61,13 +63,13 @@ var generateRandomString = function(length) {
 
 var stateKey = 'spotify_auth_state';
 
-app.get('/login', function(req, res) {
-
+app.get('/create', function(req, res) {
+    console.log(req);
     var state = generateRandomString(16);
     res.cookie(stateKey, state);
 
     // your application requests authorization
-    var scope = 'user-read-private user-read-email playlist-read-private';
+    var scope = 'user-read-private user-read-email playlist-read-private playlist-modify-private playlist-modify-public';
     res.redirect('https://accounts.spotify.com/authorize?' +
         querystring.stringify({
             response_type: 'code',
@@ -83,10 +85,11 @@ app.get('/callback', function(req, res) {
     // your application requests refresh and access tokens
     // after checking the state parameter
 
-    readyToMakePlaylist = false;
     var code = req.query.code || null;
     var state = req.query.state || null;
     var storedState = req.cookies ? req.cookies[stateKey] : null;
+
+
 
     if (state === null || state !== storedState) {
         res.redirect('/#' +
@@ -120,6 +123,7 @@ app.get('/callback', function(req, res) {
                     json: true
                 };
 
+
                 // use the access token to access the Spotify Web API
                 request.get(options, function(error, response, body) {
                     
@@ -147,7 +151,7 @@ app.get('/callback', function(req, res) {
 
                         parsedItems.forEach(function(item){
                             //console.log("name: " + item.name + "\n");
-                            var playlist = new Playlist(item.name, item.tracks);
+                            var playlist = new Playlist(item.name, item.tracks, item.id);
                             //console.log(playlist);
                             playlists.push(playlist);
 
@@ -160,16 +164,7 @@ app.get('/callback', function(req, res) {
 
                             });
                         });
-
-                        if(readyToMakePlaylist){
-
-                            var options = {
-
-                                url: "https://api.spotify.com/v1/users/" + clientID + "/playlists",
-                                headers: {'Authorization': 'Bearer ' + access_token}
-
-                        }
-                        }
+    
                     });
                 });
 
@@ -181,8 +176,10 @@ app.get('/callback', function(req, res) {
                 //         refresh_token: refresh_token
                 //     }));
 
-                join_code = generateRandomString(6);
-                res.redirect('/join_code/' + join_code);
+
+                // THIS IS IMPORTANT FOR LATER, FUCK
+                // join_code = generateRandomString(6);
+                // res.redirect('/join_code/' + join_code);
 
             } else {
                 res.redirect('/#' +
@@ -237,7 +234,6 @@ function storeTrackData(playlist, access_token){
         var firstURLPart = "https://api.spotify.com/v1/audio-features/?ids=";
 
         //console.log(playlist.trackArray);
-        //console.log(playlist);
         for(i = 0; i < playlist.trackArray.length-1; i++){
             firstURLPart = firstURLPart.concat(playlist.trackArray[i].id, ',');
         }
@@ -246,7 +242,7 @@ function storeTrackData(playlist, access_token){
         var options = {
             url: firstURLPart,
             headers: {'Authorization': 'Bearer ' + access_token}
-        }
+        };
 
         request.get(options, function(error, response, body){
             if(error){
@@ -258,15 +254,29 @@ function storeTrackData(playlist, access_token){
 
             var counter = 0;
 
-            for(i = 0; i < parsed.audio_features.length; i++){
 
-                playlist.trackArray[i].danceability = parsed.audio_features[i].danceability;
-                playlist.trackArray[i].energy = parsed.audio_features[i].energy;
-                playlist.trackArray[i].acousticness = parsed.audio_features[i].acousticness;
-                playlist.trackArray[i].instrumentalness = parsed.audio_features[i].instrumentalness;
-                playlist.trackArray[i].valence = parsed.audio_features[i].valence;
-                counter++;
-                //console.log(playlist.trackArray[i]);
+            if(parsed.audio_features) {
+                //console.log("Audio feature length: " + parsed.audio_features.length);
+                for (i = 0; i < parsed.audio_features.length; i++) {
+
+                    playlist.trackArray[i].danceability = parsed.audio_features[i].danceability;
+                    playlist.trackArray[i].energy = parsed.audio_features[i].energy;
+                    playlist.trackArray[i].acousticness = parsed.audio_features[i].acousticness;
+                    playlist.trackArray[i].instrumentalness = parsed.audio_features[i].instrumentalness;
+                    playlist.trackArray[i].valence = parsed.audio_features[i].valence;
+                    counter++;
+                    //console.log(playlist.trackArray[i]);
+                }
+                if (counter === parsed.audio_features.length && counter !== 0) {
+                    playlist.complete = true;
+                    //console.log(playlist.name);
+                    if (playlist.name !== null) {
+                        //console.log(playlist.name);
+                        fillPlaylist(playlist, access_token)
+                    }
+
+
+                }
             }
 
             if(counter == parsed.audio_features.length-1){
@@ -281,9 +291,55 @@ function storeTrackData(playlist, access_token){
 }
 
 
+function createPlaylist(clientID, access_token){
+
+    var options = {
+
+            url: "https://api.spotify.com/v1/users/" + clientID + "/playlists",
+            body: JSON.stringify({name: "Swampify"}),
+            headers: {
+                'Authorization': 'Bearer ' + access_token,
+                'Content-Type': 'application/json'
+            }
+        };
+
+        request.post(options, function(error, response, body){
+
+            //console.log(body);
+
+
+        });
+
+
+}
+
+
+function fillPlaylist(playlist, access_token) {
+
+
+    var firstURLPart = "https://api.spotify.com/v1/playlists/" + playlist.id + "/tracks";
+
+    var matchingTrackURIs;
+
+    playlist.trackArray.forEach(function(track){
+
+        if(
+            (track.danceability <= (songData[0]+0.1) && track.danceability >= (songData[0] - 0.1))
+            && (track.energy <= (songData[1]+0.1) && track.energy >= (songData[1] - 0.1))
+            && (track.acousticness <= (songData[2]+0.1) && track.acousticness >= (songData[2] - 0.1))
+            && (track.instrumentalness <= (songData[3]+0.1) && track.instrumentalness >= (songData[3] - 0.1))
+            && (track.valence <= (songData[4]+0.1) && track.valence >= (songData[4] - 0.1))
+        ){
+
+            matchingTrackURIs.push(track.uri);
+
+        }
+    })
 
 
 
+
+}
 
 
 

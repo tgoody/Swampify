@@ -3,10 +3,12 @@ var request = require('request');
 
 
 module.exports = class Playlist {
-    constructor(name, trackPaging) {
+    constructor(name, trackPaging, id) {
         this.name = name;
+        this.id = id;
         this.tracksLink = trackPaging.href;
         this.trackArray = [];
+        this.complete = false;
       }
 
     addTracks(access_token, callback){
@@ -33,10 +35,9 @@ module.exports = class Playlist {
             var newArr = [];
             parsedItems.forEach(function(track){
 
-                var tempTrack = new Track(track.track.name, track.track.id);
+                var tempTrack = new Track(track.track.name, track.track.id, track.track.uri);
 
-                //console.log(tempTrack.name + " " + tempTrack.id);
-
+                //console.log(tempTrack.uri);
                 newArr.push(tempTrack);
 
             })
