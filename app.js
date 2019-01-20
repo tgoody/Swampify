@@ -12,6 +12,10 @@ var request = require('request'); // "Request" library
 var cors = require('cors');
 var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
+//var Handlebars = require('handlebars');
+
+const path = require('path');
+
 
 var client_id = 'b17ecc12d66441eb8749fcee579ea8a1'; // Your client id
 var client_secret = 'f2b6f115f4d54823a6782a13dd2a07ab'; // Your secret
@@ -21,12 +25,23 @@ var clientBody;
 var clientURI;
 var readyToMakePlaylist = false;
 
+// MODULES/CLASSES HERE
 const Playlist = require('./modules/playlist');
 const Track = require('./modules/track');
 
-const path = require('path');
-
 var join_code;
+
+
+var app = express();
+app.set('view engine', 'ejs');
+app.set('views', "./public/views")
+
+app.use(express.static(__dirname + '/public'))
+    .use(cors())
+    .use(cookieParser());
+
+//app.engine('html', require('ejs').renderFile);
+
 
 
 /**
@@ -45,12 +60,6 @@ var generateRandomString = function(length) {
 };
 
 var stateKey = 'spotify_auth_state';
-
-var app = express();
-
-app.use(express.static(__dirname + '/public'))
-    .use(cors())
-    .use(cookieParser());
 
 app.get('/login', function(req, res) {
 
@@ -113,7 +122,7 @@ app.get('/callback', function(req, res) {
 
                 // use the access token to access the Spotify Web API
                 request.get(options, function(error, response, body) {
-                    //console.log(body);
+                    
                     clientBody = body;
 
                     var clientID = clientBody.id;
@@ -121,13 +130,11 @@ app.get('/callback', function(req, res) {
                         url: 'https://api.spotify.com/v1/users/' + clientID + '/playlists?limit=50',
                         headers: { 'Authorization': 'Bearer ' + access_token }
                     };
-
                     
                     var parsedItems;
                     var playlists = [];
 
                     request.get(options, function(error, response, body){
-                        //console.log(body);
                         if(error){
                             console.log(error);
                         }
@@ -146,19 +153,13 @@ app.get('/callback', function(req, res) {
 
                         });
 
-
-
                         playlists.forEach(function(playlist){
                             playlist.addTracks(access_token, function(){
 
                                 storeTrackData(playlist, access_token);
 
-                                //console.log(playlist.trackArray);
-                                //console.log("\nNEWPLAYLIST\n");
-                                //console.log(playlist.trackArray.length);
                             });
                         });
-
 
                         if(readyToMakePlaylist){
 
@@ -167,12 +168,7 @@ app.get('/callback', function(req, res) {
                                 url: "https://api.spotify.com/v1/users/" + clientID + "/playlists",
                                 headers: {'Authorization': 'Bearer ' + access_token}
 
-
                         }
-
-
-
-
                         }
                     });
                 });
@@ -186,7 +182,6 @@ app.get('/callback', function(req, res) {
                 //     }));
 
                 join_code = generateRandomString(6);
-                console.log(join_code);
                 res.redirect('/join_code/' + join_code);
 
             } else {
@@ -199,12 +194,12 @@ app.get('/callback', function(req, res) {
     }
 });
 
+//Directs user to unique url based on code generated,loads new html page
 app.get('/join_code/:id' , function(req,res){
-    console.log("BEFORE SEND FILE: " + join_code);
-    res.sendFile(path.join(__dirname+'/public/loaded.html'));
-
+    //res.sendFile(path.join(__dirname+'/public/loaded.html'));
+    res.render('test', {message: join_code});     
+    // res.render(__dirname+'/public/loaded', {title: 'YO', message: join_code});
 });
-
 
 app.get('/refresh_token', function(req, res) {
 
@@ -232,6 +227,7 @@ app.get('/refresh_token', function(req, res) {
 
 console.log('Listening on 8888');
 app.listen(8888);
+
 
 
 
@@ -276,10 +272,7 @@ function storeTrackData(playlist, access_token){
             if(counter == parsed.audio_features.length-1){
                 readyToMakePlaylist = true;
             }
-
             //console.log(parsed);
-
-
         })
 
 
